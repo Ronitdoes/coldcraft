@@ -27,13 +27,36 @@ export async function requireUserWithProfile(
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select(select)
+    .select(select + ", onboarding_completed")
     .eq("id", user.id)
     .single();
 
-  if (error || !profile) {
+  if (error || !profile || !(profile as any).onboarding_completed) {
     redirect("/onboarding/resume");
   }
 
   return { supabase, user, profile };
+}
+
+/**
+ * Server-side helper: gets the authenticated user and checks if they already have a profile.
+ * Redirects to dashboard if they DO have a profile.
+ * Used for protecting onboarding routes from already onboarded users.
+ */
+export async function requireUserWithoutProfile() {
+  const { supabase, user } = await requireUser();
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("onboarding_completed")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Profile lookup error:", error);
+  } else if ((profile as any)?.onboarding_completed) {
+    redirect("/dashboard");
+  }
+
+  return { supabase, user };
 }

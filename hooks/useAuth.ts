@@ -22,8 +22,16 @@ export function useAuth(): UseAuthReturn {
   useEffect(() => {
     const supabase = createClient();
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (error || !data?.user) {
+        setUser(null);
+        // Force clear stale local session if server rejects it
+        if (error) {
+          supabase.auth.signOut().catch(() => {});
+        }
+      } else {
+        setUser(data.user);
+      }
       setIsLoading(false);
     });
 
@@ -38,8 +46,13 @@ export function useAuth(): UseAuthReturn {
 
   const signOut = async () => {
     const supabase = createClient();
-    await supabase.auth.signOut();
-    setUser(null);
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("Sign out error:", error);
+    } finally {
+      setUser(null);
+    }
   };
 
   return {

@@ -1,7 +1,7 @@
-import { requireUser } from "@/utils/supabase/auth";
+import { requireUserWithoutProfile } from "@/utils/supabase/auth";
 import ProfileReviewClient from "./client";
 
 export default async function ProfileReviewPage() {
-  await requireUser();
+  await requireUserWithoutProfile();
   return <ProfileReviewClient />;
 }

@@ -97,7 +97,8 @@ export default function ProfileReviewPage() {
         github: formData.github,
         linkedin: formData.linkedin,
         skills,
-        projects
+        projects,
+        onboarding_completed: true
       });
 
     if (error) {
@@ -113,6 +114,11 @@ export default function ProfileReviewPage() {
   const updateField = (key: keyof typeof formData) => (value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
+
+  const fieldCount = Object.values(formData).filter(v => typeof v === 'string' && v.trim() !== "").length 
+    + 1 // Email
+    + (skills.length > 0 ? 1 : 0)
+    + (projects.length > 0 ? 1 : 0);
 
   if (isLoading) {
     return (
@@ -155,21 +161,21 @@ export default function ProfileReviewPage() {
   }
 
   return (
-    <div ref={containerRef} className="min-h-[100dvh] w-full bg-black overflow-x-hidden relative perspective-[1200px]">
+    <div ref={containerRef} className="h-[100dvh] w-full bg-black overflow-hidden relative perspective-[1200px]">
 
       {/* Top Left Logo */}
       <BrandHeader className="absolute top-8 left-8 z-20" />
 
       {/* Step Indicator */}
-      <div className="absolute top-24 md:top-10 left-1/2 -translate-x-1/2">
+      <div className="absolute top-24 md:top-10 left-1/2 -translate-x-1/2 z-20">
         <StepIndicator currentStep={2} totalSteps={2} label="REVIEW YOUR PROFILE" />
       </div>
 
       {/* Main Container */}
-      <div className="w-full max-w-6xl px-4 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center min-h-[100dvh] pt-32 pb-24 md:py-24 mx-auto">
+      <div className="w-full max-w-7xl mx-auto h-full grid grid-cols-1 md:grid-cols-2">
 
-        {/* Left Column */}
-        <div className="flex flex-col items-start justify-center pt-16 md:pt-0">
+        {/* LEFT STATIC PANEL */}
+        <div className="h-full flex-col items-start justify-center px-6 md:px-12 hidden md:flex relative">
           <div className="anim-number" style={{ transformStyle: 'preserve-3d' }}>
             <h1 className="font-headline font-black text-[clamp(6rem,16vw,16rem)] leading-[0.8] tracking-tighter text-white m-0 p-0 block select-none">
               02
@@ -182,12 +188,12 @@ export default function ProfileReviewPage() {
               <span className="whitespace-nowrap">YOU?</span>
             </h2>
             <div className="font-mono uppercase tracking-[0.2em] text-[10px] text-white/40 mt-6 select-none">
-              WE FOUND 7 FIELDS &middot; REVIEW BEFORE CONTINUING
+              WE FOUND {fieldCount} {" "} FIELDS &middot; REVIEW BEFORE CONTINUING
             </div>
           </div>
 
           {/* Save Button (Desktop) */}
-          <div className="anim-cta w-full max-w-md mt-12 hidden md:block" style={{ transformStyle: 'preserve-3d' }}>
+          <div className="anim-cta w-full max-w-md mt-12" style={{ transformStyle: 'preserve-3d' }}>
             <PrimaryButton
               title={isSaving ? "Saving Profile..." : "Save & Continue"}
               subtitle="Proceed To Next Step"
@@ -197,11 +203,22 @@ export default function ProfileReviewPage() {
               className="w-full !py-3 md:!py-4 !min-w-0"
             />
           </div>
+
+          {/* Bottom Trust Line (Moved inside left panel for alignment) */}
+          <div className="absolute bottom-12 left-6 md:left-12 font-mono uppercase tracking-[0.2em] text-[10px] text-white/20 whitespace-nowrap z-10 pointer-events-none">
+            YOUR PROFILE IS SAVED AND REUSED FOR EVERY MAIL YOU GENERATE
+          </div>
         </div>
 
-        {/* Right Column */}
-        <div className="flex flex-col items-start md:items-end w-full max-w-xl mx-auto justify-center">
-          <div className="w-full flex flex-col gap-3">
+        {/* RIGHT SCROLL PANEL */}
+        <div data-lenis-prevent="true" className="h-full max-h-[100dvh] overflow-y-auto px-6 md:px-12 pt-32 md:pt-28 pb-12 flex flex-col items-start md:items-end w-full relative">
+          <div className="w-full max-w-xl mx-auto md:mx-0 flex flex-col gap-4 relative z-10">
+            
+            {/* Mobile Hero (Only visible on mobile so they still see the title) */}
+            <div className="md:hidden mb-8 mt-12">
+              <h1 className="font-headline font-black text-6xl leading-[0.8] tracking-tighter text-white">02</h1>
+              <h2 className="font-headline font-black uppercase text-4xl leading-[0.85] tracking-tighter text-white mt-2">THIS YOU?</h2>
+            </div>
 
             <FormInput
               label="FULL NAME"
@@ -247,7 +264,7 @@ export default function ProfileReviewPage() {
             />
 
             {/* Save Button (Mobile) */}
-            <div className="anim-cta w-full mt-4 md:hidden" style={{ transformStyle: 'preserve-3d' }}>
+            <div className="anim-cta w-full mt-8 md:hidden" style={{ transformStyle: 'preserve-3d' }}>
               <PrimaryButton
                 title={isSaving ? "Saving Profile..." : "Save & Continue"}
                 subtitle="Proceed To Next Step"
@@ -261,11 +278,6 @@ export default function ProfileReviewPage() {
           </div>
         </div>
 
-      </div>
-
-      {/* Bottom Trust Line */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 font-mono uppercase tracking-[0.2em] text-[10px] text-white/20 whitespace-nowrap z-10 pointer-events-none">
-        YOUR PROFILE IS SAVED AND REUSED FOR EVERY MAIL YOU GENERATE
       </div>
 
     </div>
