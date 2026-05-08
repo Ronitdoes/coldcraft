@@ -63,22 +63,28 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/[0.03] to-transparent pointer-events-none z-0" />
 
       {/* Top Logo */}
-      <BrandHeader className="absolute top-8 left-8" />
+      <div className="absolute top-8 left-8 z-20">
+        <BrandHeader />
+      </div>
 
       <div className="flex flex-col items-center w-full max-w-4xl z-10 text-center">
-        <h1 className="font-headline font-black text-[clamp(3rem,9vw,15rem)] leading-[0.85] kerning-tight text-primary select-none mb-6 text-center w-full">
-          <span className="flex flex-nowrap justify-center overflow-visible whitespace-nowrap">
-            {"NO MORE GHOSTING".split("").map((char, i) => (
-              <span key={`nomoreghosting-${i}`} className="auth-title-char inline-block opacity-0 whitespace-pre" style={{ transformStyle: "preserve-3d" }}>
-                {char === " " ? "\u00A0" : char}
+        <h1 className="font-headline font-black text-[18vw] md:text-[9vw] leading-[0.8] tracking-tighter text-primary select-none mb-6 text-center w-full pt-20 md:pt-0">
+          <div className="flex flex-wrap md:flex-nowrap justify-center overflow-visible md:whitespace-nowrap gap-x-4">
+            {["NO", "MORE", "GHOSTING"].map((word, wordIdx) => (
+              <span key={`word-${wordIdx}`} className="flex whitespace-nowrap">
+                {word.split("").map((char, i) => (
+                  <span key={`${word}-${i}`} className="auth-title-char inline-block opacity-0" style={{ transformStyle: "preserve-3d" }}>
+                    {char}
+                  </span>
+                ))}
               </span>
             ))}
-          </span>
+          </div>
         </h1>
 
         {/* Subtitle */}
         <div className="auth-subtitle opacity-0 translate-y-8 flex flex-col items-center mt-8 md:mt-12 mb-12">
-          <p className="font-body text-sm md:text-base leading-relaxed opacity-60 uppercase tracking-[0.2em] font-bold">
+          <p className="font-body text-xs md:text-base leading-relaxed opacity-60 uppercase tracking-[0.2em] font-bold px-4">
             STOP GETTING IGNORED.
             <br />
             90 SECONDS TO YOUR FIRST COLD MAIL
