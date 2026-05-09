@@ -14,6 +14,55 @@ export default function CustomScrollbar() {
   const thumbRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const metricsRef = useRef({
+    winHeight: 0,
+    docHeight: 0,
+    maxScroll: 0,
+    thumbHeight: 0,
+    canScroll: true
+  });
+
+  const [canScroll, setCanScroll] = useState(true);
+
+  const getThumbHeight = useCallback((winH: number, docH: number) => {
+    const ratio = winH / docH;
+    return Math.max(140, winH * ratio);
+  }, []);
+
+  const updateMeasurements = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    
+    const winH = window.innerHeight;
+    const docH = document.documentElement.scrollHeight;
+    const clientH = document.documentElement.clientHeight;
+    const maxS = docH - clientH;
+    const thumbH = getThumbHeight(winH, docH);
+    const scrollable = maxS > 0;
+
+    metricsRef.current = {
+      winHeight: winH,
+      docHeight: docH,
+      maxScroll: maxS,
+      thumbHeight: thumbH,
+      canScroll: scrollable
+    };
+
+    if (scrollable !== canScroll) {
+      setCanScroll(scrollable);
+    }
+
+    if (thumbRef.current) {
+      thumbRef.current.style.setProperty('--thumb-height', `${thumbH}px`);
+    }
+  }, [canScroll, getThumbHeight]);
+
+  const updateThumbPosition = useCallback((progress: number) => {
+    if (!thumbRef.current) return;
+    const { winHeight, thumbHeight } = metricsRef.current;
+    const offset = progress * (winHeight - thumbHeight);
+    thumbRef.current.style.transform = `translate3d(0, ${offset}px, 0)`;
+  }, []);
+
   useGSAP(() => {
     if (isMounted && containerRef.current) {
       gsap.to(containerRef.current, {
@@ -26,35 +75,29 @@ export default function CustomScrollbar() {
     }
   }, [isMounted]);
 
-  const getThumbHeight = useCallback(() => {
-    const ratio = window.innerHeight / document.body.scrollHeight;
-    return Math.max(140, window.innerHeight * ratio);
-  }, []);
-
-  const [canScroll, setCanScroll] = useState(true);
-
-  const updateThumbPosition = useCallback((progress: number) => {
-    if (!thumbRef.current) return;
-    const thumbH = getThumbHeight();
-    const offset = progress * (window.innerHeight - thumbH);
-    thumbRef.current.style.transform = `translateY(${offset}px)`;
-  }, [getThumbHeight]);
-
   useEffect(() => {
-    const mountFrame = requestAnimationFrame(() => setIsMounted(true));
+    const mountFrame = requestAnimationFrame(() => {
+      setIsMounted(true);
+      updateMeasurements();
+    });
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateMeasurements();
+    });
+
+    if (document.body) {
+      resizeObserver.observe(document.body);
+    }
 
     const renderLoop = () => {
-      if (!thumbRef.current) return;
+      if (!thumbRef.current || !metricsRef.current.canScroll) return;
+      
       const lenisInst = Reflect.get(window, "lenis") as { scroll?: number } | undefined;
       const winScroll = lenisInst
         ? lenisInst.scroll ?? 0
-        : document.documentElement.scrollTop;
-      const maxScroll =
-        document.documentElement.scrollHeight -
-        document.documentElement.clientHeight;
-
-      setCanScroll(maxScroll > 0);
-
+        : window.scrollY || document.documentElement.scrollTop;
+      
+      const { maxScroll } = metricsRef.current;
       if (maxScroll > 0) {
         progressRef.current = winScroll / maxScroll;
         updateThumbPosition(progressRef.current);
@@ -70,14 +113,17 @@ export default function CustomScrollbar() {
     };
 
     window.addEventListener("scroll", markScrolling, { passive: true });
+    window.addEventListener("resize", updateMeasurements, { passive: true });
 
     return () => {
       cancelAnimationFrame(mountFrame);
+      resizeObserver.disconnect();
       gsap.ticker.remove(renderLoop);
       window.removeEventListener("scroll", markScrolling);
+      window.removeEventListener("resize", updateMeasurements);
       if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
     };
-  }, [updateThumbPosition]);
+  }, [updateMeasurements, updateThumbPosition]);
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -88,8 +134,8 @@ export default function CustomScrollbar() {
 
       const startY = e.clientY;
       const startProgress = progressRef.current;
-      const thumbH = getThumbHeight();
-      const trackRange = window.innerHeight - thumbH;
+      const { winHeight, thumbHeight, docHeight } = metricsRef.current;
+      const trackRange = winHeight - thumbHeight;
 
       const onMove = (evt: PointerEvent) => {
         if (!isDragging.current || trackRange <= 0) return;
@@ -97,8 +143,7 @@ export default function CustomScrollbar() {
         const clamped = Math.max(0, Math.min(1, startProgress + delta));
         progressRef.current = clamped;
 
-        const maxScroll =
-          document.body.scrollHeight - window.innerHeight;
+        const maxScroll = docHeight - winHeight;
         window.scrollTo({ top: clamped * maxScroll, behavior: "instant" as ScrollBehavior });
       };
 
@@ -112,7 +157,7 @@ export default function CustomScrollbar() {
       window.addEventListener("pointermove", onMove);
       window.addEventListener("pointerup", onUp);
     },
-    [getThumbHeight]
+    []
   );
 
   if (!isMounted || pathname === "/login" || pathname === "/onboarding/resume" || pathname === "/onboarding/profile" || pathname === "/dashboard" || pathname === "/compose" || !canScroll) return null;
@@ -128,7 +173,7 @@ export default function CustomScrollbar() {
           ${isScrolling ? "w-[6px] mr-2 opacity-80" : "w-[36px] mr-0 opacity-100"}
         `}
         style={{
-          height: `${getThumbHeight()}px`,
+          height: 'var(--thumb-height, 140px)',
           transitionProperty: "width, margin, opacity",
           transitionDuration: "500ms",
           transitionTimingFunction: "cubic-bezier(0.76, 0, 0.24, 1)",

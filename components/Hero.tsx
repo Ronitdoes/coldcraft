@@ -71,13 +71,13 @@ export default function Hero() {
           <span className="flex justify-center overflow-visible relative">
             <GetOverlaySVG />
             {"HIRED".split("").map((char, i) => (
-              <span key={i} className="hero-char inline-block opacity-0" style={{ transformStyle: "preserve-3d" }}>{char}</span>
+              <span key={i} className="hero-char inline-block opacity-0 will-change-transform" style={{ transformStyle: "preserve-3d" }}>{char}</span>
             ))}
           </span>
-          <div className="absolute bottom-[0.06em] left-1/2 -translate-x-1/2 bg-primary/40 h-[1px] w-[80vw] md:w-[40vw] max-w-3xl z-[-1] hero-line transform-origin-left opacity-0 scale-x-0" />
+          <div className="absolute bottom-[0.06em] left-1/2 -translate-x-1/2 bg-primary/40 h-[1px] w-[80vw] md:w-[40vw] max-w-3xl z-[-1] hero-line transform-origin-left opacity-0 scale-x-0 will-change-transform" />
         </h1>
         <div className="flex flex-col items-center w-full">
-          <div className="grid grid-cols-12 w-full text-left mt-12 mb-12 hero-sub opacity-0 translate-y-[30px]">
+          <div className="grid grid-cols-12 w-full text-left mt-12 mb-12 hero-sub opacity-0 translate-y-[30px] will-change-transform">
             <div className="col-span-12 md:col-span-4 min-h-[120px]">
               <p className="font-body text-sm leading-relaxed opacity-60 uppercase tracking-[0.2em] font-bold">
                 STOP GETTING IGNORED.<br />
@@ -90,7 +90,7 @@ export default function Hero() {
             </div>
             <div className="hidden md:block col-span-4" />
           </div>
-          <div className="flex flex-col items-center gap-4 md:gap-6 mt-8 md:-mt-12 relative z-20 hero-sub opacity-0 translate-y-[30px] pointer-events-auto">
+          <div className="flex flex-col items-center gap-4 md:gap-6 mt-8 md:-mt-12 relative z-20 hero-sub opacity-0 translate-y-[30px] pointer-events-auto will-change-transform">
             {/* Hand-drawn Arrow */}
             <div className="absolute left-1/2 top-1/2 hidden md:block pointer-events-none opacity-80 z-[-1] translate-x-[11.25rem] lg:translate-x-[13rem] -translate-y-[85%]">
               <span className="hero-arrow-text absolute bottom-[40%] left-[10%] lg:left-[10%] text-white text-xl lg:text-3xl tracking-widest font-bold opacity-0 whitespace-nowrap" style={{ fontFamily: '"Caveat", "Comic Sans MS", cursive', filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.5))" }}>

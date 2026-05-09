@@ -38,15 +38,23 @@ type MailHistory = {
   created_at: string;
 };
 
-export default function DashboardClient() {
+export default function DashboardClient({ 
+  initialUser, 
+  initialProfile, 
+  initialMailHistory 
+}: { 
+  initialUser: any; 
+  initialProfile: Profile | null; 
+  initialMailHistory: MailHistory[];
+}) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // State
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [mailHistory, setMailHistory] = useState<MailHistory[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<any>(initialUser);
+  const [profile, setProfile] = useState<Profile | null>(initialProfile);
+  const [mailHistory, setMailHistory] = useState<MailHistory[]>(initialMailHistory);
   const [expandedMails, setExpandedMails] = useState<Set<string>>(new Set());
   const [toggleWord, setToggleWord] = useState(false);
   const [isPageAnimationFinished, setIsPageAnimationFinished] = useState(false);
@@ -69,37 +77,17 @@ export default function DashboardClient() {
   }, [isPageAnimationFinished]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const supabase = createClient();
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
-      
-      setUser(session.user);
+    const pName = profile?.name;
+    const mName = typeof user?.user_metadata?.full_name === "string"
+      ? user.user_metadata.full_name
+      : user?.user_metadata?.name;
+    const fName = typeof mName === "string"
+      ? mName
+      : user?.email?.split("@")[0];
+    
+    setGreeting(getGreeting(pName || fName || null));
+  }, [profile, user]);
 
-      // Concurrent fetching
-      const [profileResponse, mailResponse] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', session.user.id).single(),
-        supabase.from('mail_history').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false })
-      ]);
-
-      if (profileResponse.data) setProfile(profileResponse.data);
-      if (mailResponse.data) setMailHistory(mailResponse.data);
-
-      const profileName = profileResponse.data?.name;
-      const metadataName = typeof session.user.user_metadata?.full_name === "string"
-        ? session.user.user_metadata.full_name
-        : session.user.user_metadata?.name;
-      const fallbackName = typeof metadataName === "string"
-        ? metadataName
-        : session.user.email?.split("@")[0];
-      setGreeting(getGreeting(profileName || fallbackName || null));
-
-      setIsLoading(false);
-    };
-
-    fetchData();
-  }, [router]);
 
   useGSAP(() => {
     if (isLoading || !containerRef.current || !greeting) return;
@@ -350,7 +338,7 @@ export default function DashboardClient() {
         </div>
 
         {/* Primary CTA */}
-        <div className="anim-cta mb-12 flex flex-wrap gap-4 md:gap-6 justify-center">
+        <div className="anim-cta mb-12 flex flex-wrap gap-4 md:gap-6 justify-center opacity-0">
           <PrimaryButton 
             title="New Cold Mail"
             subtitle="Personalise"
@@ -370,7 +358,7 @@ export default function DashboardClient() {
         </div>
 
         {/* Main Grid */}
-        <div className="anim-grid w-full">
+        <div className="anim-grid w-full opacity-0">
           
           {/* Mail History */}
           <div className="w-full flex flex-col">
