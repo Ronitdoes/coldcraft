@@ -163,11 +163,13 @@ export default function ProfileReviewPage() {
   return (
     <div ref={containerRef} className="h-screen-stable w-full bg-black overflow-hidden relative perspective-[1200px]">
 
-      {/* Top Left Logo */}
-      <BrandHeader className="absolute top-8 left-8 z-20" />
+      {/* Top Navbar */}
+      <div className="fixed top-0 left-0 right-0 h-20 md:h-24 bg-black/60 backdrop-blur-md z-40 border-b border-white/5 flex items-center px-6 md:px-12">
+        <BrandHeader />
+      </div>
 
       {/* Step Indicator */}
-      <div className="absolute top-20 md:top-10 left-1/2 -translate-x-1/2 z-20">
+      <div className="fixed top-6 md:top-8 left-1/2 -translate-x-1/2 z-50">
         <StepIndicator currentStep={2} totalSteps={2} label="REVIEW YOUR PROFILE" />
       </div>
 

@@ -208,16 +208,17 @@ export default function EditProfileClient() {
   return (
     <div ref={containerRef} className="min-h-screen-stable w-full bg-black overflow-x-hidden relative perspective-[1200px] pb-24 md:pb-0">
 
-      {/* Top Left Logo */}
-      <BrandHeader href="/dashboard" className="absolute top-8 left-8 z-20" />
-
-      {/* Back link */}
-      <button
-        onClick={() => router.push("/dashboard")}
-        className="absolute top-8 md:top-9 right-8 z-20 font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 hover:text-white transition-colors"
-      >
-        ← BACK
-      </button>
+      {/* Top Navbar */}
+      <div className="fixed top-0 left-0 right-0 h-20 md:h-24 bg-black/60 backdrop-blur-md z-40 border-b border-white/5 flex items-center justify-between px-6 md:px-12">
+        <BrandHeader href="/dashboard" />
+        
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30 hover:text-white transition-colors"
+        >
+          ← BACK
+        </button>
+      </div>
 
       {/* Main Container */}
       <div className="w-full max-w-7xl mx-auto h-full grid grid-cols-1 md:grid-cols-2">

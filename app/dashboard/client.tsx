@@ -196,9 +196,9 @@ export default function DashboardClient() {
   }
 
   return (
-    <div ref={containerRef} className="min-h-screen-stable bg-black text-white pb-24 overflow-x-hidden">
+    <div ref={containerRef} className="min-h-screen-stable bg-black text-white pb-24">
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-white/5 px-4 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 px-4 md:px-8 pt-6 md:pt-8 pb-4 flex items-center justify-between">
         <BrandHeader />
         <div className="flex items-center gap-4 relative">
           <div 
@@ -303,7 +303,7 @@ export default function DashboardClient() {
         
         {/* Hero Greeting */}
         <div className="anim-greeting mb-10 overflow-visible">
-          <h1 className="font-headline font-black uppercase text-[clamp(2.5rem,6vw,5.5rem)] leading-[0.85] tracking-tighter text-white" style={{ perspective: "1000px" }}>
+          <h1 className="font-headline font-black uppercase text-[clamp(3.5rem,8vw,8.5rem)] leading-[0.8] tracking-tighter text-white" style={{ perspective: "1000px" }}>
             <span className="inline-block whitespace-nowrap">
               {`${phrase}${nameWithDot ? "," : ""}`.split("").map((char, i) => (
                 <span key={`p-${i}`} className="greeting-char inline-block opacity-0" style={{ transformStyle: "preserve-3d" }}>

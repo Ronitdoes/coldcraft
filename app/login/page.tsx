@@ -62,8 +62,8 @@ export default function LoginPage() {
       {/* Decorative background */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/[0.03] to-transparent pointer-events-none z-0" />
 
-      {/* Top Logo */}
-      <div className="absolute top-8 left-8 z-20">
+      {/* Top Navbar */}
+      <div className="fixed top-0 left-0 right-0 h-20 md:h-24 bg-black/60 backdrop-blur-md z-40 border-b border-white/5 flex items-center px-6 md:px-12">
         <BrandHeader />
       </div>
 
