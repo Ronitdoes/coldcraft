@@ -152,6 +152,13 @@ export default function ComposeClient({ profile }: { profile: Profile | null }) 
 
       {/* LEFT COLUMN */}
       <div className="anim-left flex flex-col gap-6 w-full">
+        <Link 
+          href="/dashboard" 
+          className="group inline-flex items-center gap-2 font-mono uppercase tracking-[0.2em] text-[10px] text-white/40 hover:text-white transition-colors mb-2 w-fit"
+        >
+          <span className="transition-transform group-hover:-translate-x-1 duration-300">←</span>
+          BACK TO DASHBOARD
+        </Link>
         {isIncompleteProfile && (
           <div className="border-l-2 border-white/20 pl-4 py-2 mb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <span className="font-mono uppercase tracking-[0.2em] text-[9px] md:text-[10px] text-white/30">

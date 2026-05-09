@@ -9,7 +9,7 @@ type RateLimitAction = "generate-mail" | "parse-resume";
 
 const RATE_LIMITS: Record<RateLimitAction, number> = {
   "generate-mail": 20,
-  "parse-resume": 15,
+  "parse-resume": 5,
 };
 
 type RateLimitRow = {
