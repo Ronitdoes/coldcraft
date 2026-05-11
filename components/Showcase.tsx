@@ -1,31 +1,45 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PrimaryButton from "@/components/ui/PrimaryButton";
+import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 
 export default function Showcase() {
   const [step, setStep] = useState(1);
+  const container = useRef<HTMLElement>(null);
+  const pinDistance = 1900
 
-  // Auto-toggle every 5 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setStep(s => s === 4 ? 1 : s + 1);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
+  // Use GSAP to pin the section and map scroll progress to steps
+  useGSAP(() => {
+    ScrollTrigger.create({
+      trigger: container.current,
+      start: "top top",
+      end: `+=${pinDistance}`,
+      pin: true,
+      scrub: true,
+      onUpdate: (self) => {
+        const p = self.progress;
+        if (p < 0.25) setStep(1);
+        else if (p < 0.50) setStep(2);
+        else if (p < 0.75) setStep(3);
+        else setStep(4);
+      }
+    });
+  }, { scope: container });
 
   // Expose global function for redirection from Footer/Hero
   useEffect(() => {
     (window as any).setShowcaseStep = (s: number) => {
-      setStep(s);
       const el = document.getElementById("how-it-works");
       if (el) {
+        // Calculate scroll offset based on the step (0, 0.25, 0.5, 0.75 of pinDistance)
+        const offsetAmount = (s - 1) * (pinDistance / 4);
         const lenis = (window as any).lenis;
         if (lenis?.scrollTo) {
-          lenis.scrollTo(el, { offset: -100 });
+          lenis.scrollTo(el, { offset: offsetAmount });
         } else {
-          el.scrollIntoView({ behavior: "smooth" });
+          window.scrollTo({ top: el.offsetTop + offsetAmount, behavior: "smooth" });
         }
       }
     };
@@ -55,9 +69,9 @@ export default function Showcase() {
   };
 
   return (
-    <section id="how-it-works" className="min-h-screen-stable w-full bg-black py-24 md:py-32 relative overflow-hidden flex items-center">
+    <section id="how-it-works" ref={container} className="h-screen min-h-[600px] md:min-h-[700px] w-full bg-black relative overflow-hidden flex items-center py-4 md:py-24">
       <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12 w-full relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-12 lg:gap-20 items-center w-full">
         
         {/* Left Column: Text Content */}
         <motion.div 
@@ -79,40 +93,28 @@ export default function Showcase() {
                 transition={{ duration: 0.5 }}
                 className="col-start-1 row-start-1 flex flex-col items-start max-w-xl w-full"
               >
-                <div className="font-mono text-xs md:text-sm tracking-[0.2em] uppercase mb-4 font-bold text-white shadow-sm opacity-90">
+                <div className="font-mono text-[10px] md:text-sm tracking-[0.2em] uppercase mb-2 md:mb-4 font-bold text-white shadow-sm opacity-90">
                   {stepContent[s as keyof typeof stepContent].label}
                 </div>
-                <h2 className="font-headline text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tighter leading-[0.9] text-white drop-shadow-lg mb-8">
+                <h2 className="font-headline text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-tighter leading-[0.9] text-white drop-shadow-lg mb-4 md:mb-8">
                   {stepContent[s as keyof typeof stepContent].headline}
                 </h2>
-                <p className="font-body text-base md:text-lg opacity-60 max-w-md leading-relaxed text-white">
+                <p className="font-body text-sm md:text-lg opacity-60 max-w-md leading-relaxed text-white">
                   {stepContent[s as keyof typeof stepContent].desc}
                 </p>
               </motion.div>
             ))}
           </div>
 
-          <div className="flex gap-4 mt-6 md:mt-12 z-10 w-full relative">
-            <button 
-              onClick={() => setStep(1)}
-              className={`w-12 h-1 ${step === 1 ? "bg-white" : "bg-white/30"} transition-colors hover:bg-white/60 cursor-pointer`}
-              aria-label="View Resume Upload Step"
-            />
-            <button 
-              onClick={() => setStep(2)}
-              className={`w-12 h-1 ${step === 2 ? "bg-white" : "bg-white/30"} transition-colors hover:bg-white/60 cursor-pointer`}
-              aria-label="View Profile Review Step"
-            />
-            <button 
-              onClick={() => setStep(3)}
-              className={`w-12 h-1 ${step === 3 ? "bg-white" : "bg-white/30"} transition-colors hover:bg-white/60 cursor-pointer`}
-              aria-label="View Dashboard Step"
-            />
-            <button 
-              onClick={() => setStep(4)}
-              className={`w-12 h-1 ${step === 4 ? "bg-white" : "bg-white/30"} transition-colors hover:bg-white/60 cursor-pointer`}
-              aria-label="View Compose Step"
-            />
+          <div className="flex gap-4 mt-4 md:mt-12 z-10 w-full relative">
+            {[1, 2, 3, 4].map((s) => (
+              <button 
+                key={s}
+                onClick={() => (window as any).setShowcaseStep?.(s)}
+                className={`w-12 h-1 ${step === s ? "bg-white" : "bg-white/30"} transition-colors hover:bg-white/60 cursor-pointer`}
+                aria-label={`View Step ${s}`}
+              />
+            ))}
           </div>
         </motion.div>
 
@@ -125,8 +127,8 @@ export default function Showcase() {
           className="w-full bg-black border border-white/20 shadow-[0_30px_100px_rgba(0,0,0,0.5)] relative flex flex-col order-2 lg:order-2 overflow-hidden"
         >
           {/* Fake Window Bar */}
-          <div className="h-10 border-b border-white/10 flex items-center px-4 justify-between bg-black/50 shrink-0 z-20 relative">
-             <div className="font-headline text-sm font-bold tracking-tighter text-white">COLDCRAFT</div>
+          <div className="h-8 md:h-10 border-b border-white/10 flex items-center px-3 md:px-4 justify-between bg-black/50 shrink-0 z-20 relative">
+             <div className="font-headline text-[10px] md:text-sm font-bold tracking-tighter text-white">COLDCRAFT</div>
              <div className="flex gap-1.5">
                <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F56] border border-black/20" />
                <div className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E] border border-black/20" />
@@ -145,7 +147,7 @@ export default function Showcase() {
                 pointerEvents: step === 1 ? "auto" : "none"
               }}
               transition={{ duration: 0.5 }}
-              className="col-start-1 row-start-1 flex flex-col gap-8 p-6 md:p-8"
+              className="col-start-1 row-start-1 flex flex-col gap-6 md:gap-8 p-4 md:p-8"
             >
               {/* Step 1: Resume Upload Layout */}
               <div className="flex flex-col items-start justify-start shrink-0">
@@ -184,7 +186,7 @@ export default function Showcase() {
                 pointerEvents: step === 2 ? "auto" : "none"
               }}
               transition={{ duration: 0.5 }}
-              className="col-start-1 row-start-1 flex flex-col gap-6 p-6 md:p-8"
+              className="col-start-1 row-start-1 flex flex-col gap-4 md:gap-6 p-4 md:p-8"
             >
               {/* Step 2: Profile Review Layout */}
               <div className="flex flex-col items-start justify-center shrink-0">
@@ -264,7 +266,7 @@ export default function Showcase() {
                 pointerEvents: step === 3 ? "auto" : "none"
               }}
               transition={{ duration: 0.5 }}
-              className="col-start-1 row-start-1 flex flex-col gap-6 p-6 md:p-8"
+              className="col-start-1 row-start-1 flex flex-col gap-4 md:gap-6 p-4 md:p-8"
             >
               {/* Step 3: Exact Dashboard Layout */}
               <div className="flex flex-col w-full h-full">
@@ -355,7 +357,7 @@ export default function Showcase() {
                 pointerEvents: step === 4 ? "auto" : "none"
               }}
               transition={{ duration: 0.5 }}
-              className="col-start-1 row-start-1 flex flex-col gap-4 p-6 md:p-8"
+              className="col-start-1 row-start-1 flex flex-col gap-3 md:gap-4 p-4 md:p-8"
             >
               {/* Step 4: Compact Exact Compose Layout */}
               <div className="flex flex-col w-full h-full justify-between pb-2">
@@ -418,7 +420,7 @@ export default function Showcase() {
                     TONE
                   </label>
                   <div className="grid grid-cols-4 gap-1.5">
-                    <div className="bg-white text-black font-mono text-[8px] uppercase tracking-[0.2em] py-2 text-center truncate">PRO</div>
+                    <div className="bg-white text-black font-mono text-[8px] uppercase tracking-[0.2em] py-2 text-center truncate">PROFESSIONAL</div>
                     <div className="border border-white/10 text-white/40 font-mono text-[8px] uppercase tracking-[0.2em] py-2 text-center truncate">CASUAL</div>
                     <div className="border border-white/10 text-white/40 font-mono text-[8px] uppercase tracking-[0.2em] py-2 text-center truncate">BOLD</div>
                     <div className="border border-white/10 text-white/40 font-mono text-[8px] uppercase tracking-[0.2em] py-2 text-center truncate">CONCISE</div>
