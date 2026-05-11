@@ -15,6 +15,22 @@ export default function Showcase() {
     return () => clearInterval(timer);
   }, []);
 
+  // Expose global function for redirection from Footer/Hero
+  useEffect(() => {
+    (window as any).setShowcaseStep = (s: number) => {
+      setStep(s);
+      const el = document.getElementById("how-it-works");
+      if (el) {
+        const lenis = (window as any).lenis;
+        if (lenis?.scrollTo) {
+          lenis.scrollTo(el, { offset: -100 });
+        } else {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+    };
+  }, []);
+
   const stepContent = {
     1: {
       label: "STEP 01 — UPLOAD",
@@ -39,7 +55,7 @@ export default function Showcase() {
   };
 
   return (
-    <section className="min-h-screen-stable w-full bg-black py-24 md:py-32 relative overflow-hidden flex items-center">
+    <section id="how-it-works" className="min-h-screen-stable w-full bg-black py-24 md:py-32 relative overflow-hidden flex items-center">
       <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12 w-full relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full">
         
@@ -353,7 +369,7 @@ export default function Showcase() {
                     RECIPIENT NAME
                   </label>
                   <div className="w-full bg-white/[0.02] border border-white/20 text-white/50 font-body text-xs px-3 py-2 flex items-center">
-                    Priya Sharma
+                    Ronit Mahajan
                   </div>
                 </div>
 

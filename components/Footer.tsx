@@ -2,8 +2,43 @@
 
 import Logo from "@/components/Logo";
 import TextRollover from "@/components/TextRollover";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 export default function Footer() {
+  const router = useRouter();
+  const { user } = useAuth();
+
+  const handleHeroLikeCTA = async () => {
+    if (user) {
+      const supabase = createClient();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (profile) {
+        router.push("/dashboard");
+      } else {
+        router.push("/onboarding/resume");
+      }
+    } else {
+      router.push("/login");
+    }
+  };
+
+  const handleShowcaseStep = (step: number) => {
+    if ((window as any).setShowcaseStep) {
+      (window as any).setShowcaseStep(step);
+    } else {
+      // Fallback scroll
+      const el = document.getElementById("how-it-works");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   const socialLinks = [
     { label: "GITHUB", href: "#" },
     { label: "LINKEDIN", href: "#" },
@@ -27,13 +62,22 @@ export default function Footer() {
       <div className="flex flex-wrap gap-12 md:gap-24">
         <div className="flex flex-col gap-6">
           <span className="opacity-30 text-sm">Product</span>
-          <a className="text-on-surface-variant hover:text-on-background transition-colors text-lg font-headline font-bold" href="#">
+          <a 
+            className="text-on-surface-variant hover:text-on-background transition-colors text-lg font-headline font-bold cursor-pointer" 
+            onClick={handleHeroLikeCTA}
+          >
             <TextRollover text="How it works" />
           </a>
-          <a className="text-on-surface-variant hover:text-on-background transition-colors text-lg font-headline font-bold" href="#">
+          <a 
+            className="text-on-surface-variant hover:text-on-background transition-colors text-lg font-headline font-bold cursor-pointer" 
+            onClick={() => handleShowcaseStep(1)}
+          >
             <TextRollover text="Resume parser" />
           </a>
-          <a className="text-on-surface-variant hover:text-on-background transition-colors text-lg font-headline font-bold" href="#">
+          <a 
+            className="text-on-surface-variant hover:text-on-background transition-colors text-lg font-headline font-bold cursor-pointer" 
+            onClick={() => handleShowcaseStep(4)}
+          >
             <TextRollover text="Mail composer" />
           </a>
         </div>
