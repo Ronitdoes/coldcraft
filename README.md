@@ -67,7 +67,7 @@ The user flow is simple:
 ### 🔐 Authentication
 - Google OAuth via Supabase Auth
 - Server-side session management using `@supabase/ssr`
-- Protected routes via middleware
+- Protected routes and session refresh via Next.js proxy middleware (`proxy.ts`)
 - Secure auth callback with open-redirect prevention
 
 ### 👤 User Profile
@@ -137,7 +137,7 @@ The user flow is simple:
 
 **Server Components by Default**: Data fetching happens on the server using `createClient()` from `@supabase/ssr`. Client components (`"use client"`) are used only for interactivity and GSAP animations.
 
-**No Streaming**: Email generation uses a single-shot API call with a 15-second timeout, not streaming. This keeps the implementation simple and avoids partial-render complexity.
+**No Streaming & Strict Timeouts**: Generation uses a single-shot API call, not streaming, to avoid partial-render complexity. A hard 15-second timeout is enforced at the provider abstraction layer via `Promise.race`, ensuring the UI never hangs indefinitely during provider outages.
 
 **One Supabase Client Per Context**: Three client factories exist:
 - `utils/supabase/client.ts` — browser-side (uses anon key, respects RLS)
@@ -206,11 +206,12 @@ coldapril/
 ├── utils/supabase/
 │   ├── admin.ts                     # Service-role Supabase client (server only)
 │   ├── client.ts                    # Browser Supabase client
-│   ├── proxy.ts                     # Session update middleware proxy
+│   ├── proxy.ts                     # Core session update & route guard logic
 │   └── server.ts                    # Server Supabase client
 │
 ├── supabase/migrations/             # SQL migration files
 ├── ENVIRONMENT.example              # Environment variable template
+├── proxy.ts                         # Next.js middleware root proxy
 ├── next.config.ts                   # Next.js config + security headers
 ├── DESIGN_SYSTEM.md                 # Visual design spec
 └── package.json
@@ -374,8 +375,8 @@ Uploads and parses a PDF resume, saving the extracted data to the user's profile
 
 ColdCraft implements a multi-layer security architecture across all sensitive routes.
 
-### 1. Authentication Guard
-Every API route calls `supabase.auth.getUser()` — never `getSession()`. This verifies the JWT against Supabase's auth server, preventing session replay attacks.
+### 1. Authentication Guard & Session Refresh
+Every API route calls `supabase.auth.getUser()` — never `getSession()`. This securely verifies the JWT against Supabase's auth server, preventing session replay attacks. Furthermore, `proxy.ts` securely intercepts requests to protected routes, extending the session cookie (`updateSession`) so users aren't randomly logged out during active use.
 
 ### 2. Rate Limiting
 Implemented via a Postgres RPC function (`consume_rate_limit`) and the admin Supabase client. Limits are enforced server-side, cannot be bypassed by the client.
@@ -403,13 +404,18 @@ Resume uploads go through three validation layers:
 All user inputs to AI prompts are sanitized via `trimText()` and `sanitizeStringArray()` to enforce maximum lengths and prevent prompt injection through oversized payloads.
 
 ### 7. Content Security Policy (CSP)
-Enforced via HTTP headers in `next.config.ts`:
+Enforced via dynamic HTTP headers in `next.config.ts`. The policy explicitly isolates environments:
 ```
 default-src 'self'
-img-src 'self' data: blob: https://lh3.googleusercontent.com *.googleusercontent.com
-script-src 'self' 'unsafe-inline' 'unsafe-eval'
-connect-src 'self' <SUPABASE_URL>
+base-uri 'self'
 frame-ancestors 'none'
+form-action 'self'
+object-src 'none'
+img-src 'self' data: blob: https://lh3.googleusercontent.com *.googleusercontent.com
+font-src 'self' https://fonts.gstatic.com data:
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com
+script-src 'self' 'unsafe-inline' (+ 'unsafe-eval' conditionally in dev)
+connect-src 'self' <SUPABASE_URL>
 ```
 
 ### 8. Additional Security Headers
