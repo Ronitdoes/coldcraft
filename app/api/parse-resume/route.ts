@@ -78,18 +78,6 @@ export async function POST(req: Request) {
       return Response.json({ error: "This resume has too much text to process. Please upload a shorter version." }, { status: 400 });
     }
 
-    const { error: uploadError } = await supabase.storage
-      .from("resumes")
-      .upload(`${user.id}/resume.pdf`, file, {
-        contentType: "application/pdf",
-        upsert: true,
-      });
-
-    if (uploadError) {
-      console.error("Storage upload error:", uploadError);
-      return Response.json({ error: "We could not save your resume right now. Please try again." }, { status: 500 });
-    }
-
     let completion;
     try {
       completion = await groq.chat.completions.create({

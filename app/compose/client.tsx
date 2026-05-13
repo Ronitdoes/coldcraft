@@ -257,7 +257,6 @@ export default function ComposeClient({ profile }: { profile: Profile | null }) 
           options={WORD_LIMIT_OPTIONS}
           value={String(inputs.wordLimit)}
           onChange={(v) => updateInput("wordLimit", Number(v))}
-          hint="// RECRUITERS SPEND 8 SECONDS ON COLD MAILS"
         />
 
         <div>

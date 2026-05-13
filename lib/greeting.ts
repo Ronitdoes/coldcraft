@@ -1,13 +1,13 @@
 const greetings = {
-  morning:   ["RISE UP","EARLY BIRD","GOOD MORNING","WAKE UP",
-               "START STRONG","CLOCK'S TICKING","LET'S GO","GRIND TIME"],
+  morning:   ["RISE UP","EARLY BIRD","GOOD MORNING",
+               "START STRONG","LET'S GO","GRIND TIME"],
   afternoon: ["GOOD AFTERNOON","STILL GRINDING","KEEP GOING","MIDDAY HUSTLE",
-               "STAY FOCUSED","DON'T STOP","HALF WAY","LUNCH DONE"],
-  evening:   ["GOOD EVENING","ALMOST THERE","GOLDEN HOUR","EVENING GRIND",
-               "ONE MORE","STAY SHARP","WIND DOWN","LAST PUSH"],
+               "STAY FOCUSED"],
+  evening:   ["GOOD EVENING","GOLDEN HOUR","EVENING GRIND",
+               "STAY SHARP"],
   night:     ["NIGHT OWL","STILL UP","LATE NIGHT","CAN'T SLEEP",
-               "NIGHT SHIFT","KEEP GRINDING","LIGHTS ON","STAY UP"],
-  latenight: ["DEEP NIGHT","YOU'RE CRAZY","WORLD'S ASLEEP","STILL HERE",
+               "NIGHT SHIFT","KEEP GRINDING","LIGHTS ON"],
+  latenight: ["DEEP NIGHT","WORLD'S ASLEEP","STILL HERE",
                "PAST MIDNIGHT","DEAD HOURS","NEVER STOPPING","RESPECT THOUGH"],
 };
 
