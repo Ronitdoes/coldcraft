@@ -234,7 +234,9 @@ Stores parsed resume data for each user. One row per user.
 | `linkedin` | `text` | LinkedIn profile URL |
 | `portfolio` | `text` | Portfolio website URL |
 | `skills` | `text[]` | Up to 8 technical skills |
-| `projects` | `text[]` | Up to 5 project names |
+| `projects` | `jsonb` | Array of up to 5 project objects (name, description, tech, link) |
+| `onboarding_completed` | `boolean` | Whether the user has finished the initial setup |
+| `updated_at` | `timestamptz` | Last profile update timestamp |
 | `created_at` | `timestamptz` | Row creation timestamp |
 
 ### `mail_history`
@@ -346,7 +348,14 @@ Uploads and parses a PDF resume, saving the extracted data to the user's profile
     "linkedin": "linkedin.com/in/rahulsharma",
     "portfolio": "",
     "skills": ["React", "Node.js", "PostgreSQL", "Docker"],
-    "projects": ["SmartHire", "CollegeConnect", "AutoGrade"]
+    "projects": [
+      {
+        "name": "SmartHire",
+        "description": "An AI-powered recruitment platform.",
+        "tech": "React, Supabase",
+        "link": "https://github.com/rahul/smarthire"
+      }
+    ]
   }
 }
 ```
@@ -605,9 +614,10 @@ The `ViewportFix` component (mounted globally in `layout.tsx`) sets `--vh` on pa
 Both AI prompts are centralized in `lib/prompts.ts`. The email generation prompt is highly opinionated and battle-tested. Key constraints enforced by the prompt:
 - Opens with something specific about the **company or role**, not the candidate
 - Mentions exactly 1-2 projects, never more
+- **Project Link Rule**: If a project has a link in the profile, it is automatically included in parentheses immediately after the project name inline.
 - Ends with exactly one ask (call or portfolio link, not both)
 - Bans specific clichés: "passionate", "keen", "eager", "excited", "leverage"
-- Follow-up emails must be under 80 words regardless of the selected word limit
+- **Follow-up emails** must be between 60-75 words regardless of the selected word limit and must reference the previous lack of response.
 
 ---
 
