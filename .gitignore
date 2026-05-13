@@ -45,3 +45,4 @@ Whisk_229087b6fc698519e9d4efff55047e79eg.png
 
 # Ignore all markdown files
 *.md
+!README.md
