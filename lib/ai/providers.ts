@@ -18,12 +18,11 @@ import type {
   AIGenerationResponse,
   AIProviderName,
 } from "./types";
+import { keyPool } from "./key-pool";
 
 // ---------------------------------------------------------------------------
 // Gemini Provider
 // ---------------------------------------------------------------------------
-
-const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 /** ⬇️  GEMINI_MODEL — change this to switch Gemini models */
 const GEMINI_MODEL = "gemini-3.1-flash-lite";
@@ -32,30 +31,48 @@ export const geminiProvider: AIProvider = {
   name: "gemini",
 
   async generate(req: AIGenerationRequest): Promise<AIGenerationResponse> {
-    const geminiPromise = gemini.models.generateContent({
-      model: GEMINI_MODEL,
-      contents: req.userMessage,
-      config: {
-        systemInstruction: req.systemPrompt,
-        temperature: req.temperature,
-        maxOutputTokens: req.maxTokens,
-        // Disable thinking for lower latency on structured tasks
-        thinkingConfig: { thinkingBudget: 0 },
-      },
-    });
+    while (true) {
+      const apiKey = keyPool.getAvailableGeminiKey();
 
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("Gemini request timed out after 15s")), 15_000)
-    );
+      if (!apiKey) {
+        throw new Error("All Gemini keys are exhausted or on cooldown");
+      }
 
-    const response = await Promise.race([geminiPromise, timeoutPromise]);
+      const gemini = new GoogleGenAI({ apiKey });
 
-    const text = response.text;
-    if (!text || text.trim().length === 0) {
-      throw new Error("Gemini returned empty response");
+      try {
+        const geminiPromise = gemini.models.generateContent({
+          model: GEMINI_MODEL,
+          contents: req.userMessage,
+          config: {
+            systemInstruction: req.systemPrompt,
+            temperature: req.temperature,
+            maxOutputTokens: req.maxTokens,
+            // Disable thinking for lower latency on structured tasks
+            thinkingConfig: { thinkingBudget: 0 },
+          },
+        });
+
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Gemini request timed out after 15s")), 15_000)
+        );
+
+        const response = await Promise.race([geminiPromise, timeoutPromise]);
+
+        const text = response.text;
+        if (!text || text.trim().length === 0) {
+          throw new Error("Gemini returned empty response");
+        }
+
+        keyPool.markKeySuccess(apiKey);
+        return { text: text.trim(), provider: "gemini" };
+      } catch (err) {
+        keyPool.markKeyFailure(apiKey, err);
+        const errMessage = err instanceof Error ? err.message : String(err);
+        console.log(`[AI] Gemini key failed (${errMessage}), rotating...`);
+        // Continue the while loop to try the next available key
+      }
     }
-
-    return { text: text.trim(), provider: "gemini" };
   },
 };
 

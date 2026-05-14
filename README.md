@@ -529,7 +529,7 @@ Copy `ENVIRONMENT.example` to `.env.local` and fill in all values.
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Your Supabase anon/publishable key |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Your Supabase service role key (**never expose to client**) |
 | `GROQ_API_KEY` | ✅ | Your Groq API key for LLaMA inference |
-| `GEMINI_API_KEY` | ✅ | Your Google Gemini API key |
+| `GEMINI_API_KEYS` | ✅ | Comma-separated list of Google Gemini API keys for rotation |
 | `APP_ORIGIN` | ✅ (production) | Your primary domain (e.g., `https://coldcraft.app`) — used for security validation |
 | `ALLOWED_REDIRECT_ORIGINS` | Optional | Additional trusted origins, comma-separated (e.g., Vercel preview URLs) |
 
@@ -538,8 +538,8 @@ Copy `ENVIRONMENT.example` to `.env.local` and fill in all values.
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-GROQ_API_KEY=gsk_xxxxxxxxxxxx
-GEMINI_API_KEY=AIzaSy_xxxxxxxxxxxx
+GROQ_API_KEY=xxxxxxxxxxxx
+GEMINI_API_KEYS=key1,AIzaSy_key2
 APP_ORIGIN=http://localhost:3000
 ```
 
