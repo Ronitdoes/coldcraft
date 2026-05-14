@@ -91,10 +91,10 @@ export default function ProjectEditor({
               />
 
               <FormInput
-                label="PROJECT LINK (GITHUB/LIVE DEMO)"
+                label="PROJECT LINK (LIVE DEMO)"
                 value={project.link}
                 onChange={(val) => handleUpdate(i, "link", val)}
-                placeholder="e.g. https://github.com/..."
+                placeholder="e.g. myproject.vercel.app"
               />
             </div>
           </div>
