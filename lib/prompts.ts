@@ -166,7 +166,7 @@ Rules:
     If no description is clear from the resume, use ""
   - tech: comma-separated tech stack used (max 5 technologies). 
     If not clear from the resume, use ""
-  - link: project URL if found (GitHub, Demo, etc.). If not found, use ""
+  - link: ONLY the live deployment or demo URL (e.g., Vercel, Netlify, custom domain). EXCLUDE GitHub repository links. If no live link is found, use ""
 - If a field is not found use "" for strings and [] for arrays
 - year: determine the student's current year of study. The most reliable way is to look at their expected graduation year. The current year is ${currentYear}.
   - If expected graduation is ${currentYear + 4}, they are "First Year".
