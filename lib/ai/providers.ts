@@ -31,7 +31,11 @@ export const geminiProvider: AIProvider = {
   name: "gemini",
 
   async generate(req: AIGenerationRequest): Promise<AIGenerationResponse> {
-    while (true) {
+    let attempts = 0;
+    const MAX_ATTEMPTS = 5;
+
+    while (attempts < MAX_ATTEMPTS) {
+      attempts++;
       const apiKey = keyPool.getAvailableGeminiKey();
 
       if (!apiKey) {
@@ -39,6 +43,7 @@ export const geminiProvider: AIProvider = {
       }
 
       const gemini = new GoogleGenAI({ apiKey });
+      const abortController = new AbortController();
 
       try {
         const geminiPromise = gemini.models.generateContent({
@@ -50,11 +55,16 @@ export const geminiProvider: AIProvider = {
             maxOutputTokens: req.maxTokens,
             // Disable thinking for lower latency on structured tasks
             thinkingConfig: { thinkingBudget: 0 },
+            // Pass the abort signal for proper cancellation
+            abortSignal: abortController.signal,
           },
         });
 
         const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Gemini request timed out after 15s")), 15_000)
+          setTimeout(() => {
+            abortController.abort();
+            reject(new Error("Gemini request timed out after 15s"));
+          }, 15_000)
         );
 
         const response = await Promise.race([geminiPromise, timeoutPromise]);
@@ -67,12 +77,22 @@ export const geminiProvider: AIProvider = {
         keyPool.markKeySuccess(apiKey);
         return { text: text.trim(), provider: "gemini" };
       } catch (err) {
-        keyPool.markKeyFailure(apiKey, err);
         const errMessage = err instanceof Error ? err.message : String(err);
-        console.log(`[AI] Gemini key failed (${errMessage}), rotating...`);
+        
+        // Short-circuit on 400 Bad Request (e.g., safety filters)
+        // because the prompt itself is invalid and retrying will always fail.
+        if (errMessage.includes("400") || errMessage.toLowerCase().includes("safety")) {
+          console.error(`[AI] Gemini 400/Safety error. Aborting rotation: ${errMessage}`);
+          throw err;
+        }
+
+        keyPool.markKeyFailure(apiKey, err);
+        console.log(`[AI] Gemini key failed (${errMessage}), rotating... (Attempt ${attempts}/${MAX_ATTEMPTS})`);
         // Continue the while loop to try the next available key
       }
     }
+
+    throw new Error(`Gemini failed after ${MAX_ATTEMPTS} attempts.`);
   },
 };
 
