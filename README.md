@@ -629,7 +629,7 @@ Both AI prompts are centralized in `lib/prompts.ts`. The email generation prompt
 
 ## Contributing
 
-This is a personal project by [@Ronitdoes](https://github.com/Ronitdoes). Feel free to fork and build on it.
+This is a personal project by [@Ronitdoes](https://github.com/Ronitdoes).
 
 ---
 
